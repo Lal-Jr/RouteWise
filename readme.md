@@ -2,7 +2,17 @@
 
 A smart travel itinerary planner. Give it a starting point and the places you want to visit, with opening hours, visit length and priority. RouteWise finds a feasible order using real road, bike or walking travel times. While you travel, it **automatically repairs the schedule** when things change.
 
-![Demo: a walking day in Paris](docs/screenshot.png)
+![Demo: the Paris walking day, a stop's details, then live mode: a stop is visited, the trip runs an hour late and the plan repairs itself](docs/media/demo.gif)
+
+## Screenshots
+
+<p>
+  <img src="docs/media/plan.jpg" width="100%" alt="The planned day: stops ordered around opening hours, with walking routes drawn along real roads">
+</p>
+<p>
+  <img src="docs/media/stop.jpg" width="49%" alt="A stop expanded to edit its visit length, priority and opening hours">
+  <img src="docs/media/repair.jpg" width="49%" alt="Live mode after reporting an hour's delay: the repair banner lists the dropped, restored, moved and retimed stops">
+</p>
 
 ## Features
 
