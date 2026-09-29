@@ -1,3 +1,4 @@
+import { unschedulableReason } from '../core/feasibility'
 import type { Plan, Visit } from '../core/solver'
 import { formatDuration, formatTime, parseTime } from '../core/time'
 import type { LiveState, Priority, Stop, Trip } from '../core/types'
@@ -113,23 +114,39 @@ export function Itinerary({ trip, plan, live, selectedId, nameOf, onSelect, onUp
             {plan.dropped.map((id) => {
               const s = stopById.get(id)
               if (!s) return null
+              const why = unschedulableReason(s, trip)
+              const open = selectedId === id
               return (
-                <li key={id}>
-                  <div>
-                    <span className="tl-name">{s.name}</span>
-                    <span className="muted small">
-                      {' '}
-                      · {PRIORITY_LABEL[s.priority]} · {formatDuration(s.duration)}
-                    </span>
-                  </div>
-                  <div className="btn-row">
-                    <button className="btn btn-sm" onClick={() => onUpdate(id, { priority: 'must' })}>
-                      Make must-visit
+                <li key={id} id={`stop-${id}`} className={open ? 'dropped-open' : ''}>
+                  <div className="dropped-row">
+                    <button className="tl-head" onClick={() => onSelect(open ? null : id)} aria-expanded={open}>
+                      <span className="tl-name">{s.name}</span>
+                      <span className="muted small">
+                        {PRIORITY_LABEL[s.priority]} · {formatDuration(s.duration)}
+                      </span>
                     </button>
-                    <button className="btn btn-sm btn-ghost" onClick={() => onRemove(id)}>
-                      Remove
-                    </button>
+                    <div className="btn-row">
+                      {!why && (
+                        <button className="btn btn-sm" onClick={() => onUpdate(id, { priority: 'must' })}>
+                          Make must-visit
+                        </button>
+                      )}
+                      <button className="btn btn-sm btn-ghost" onClick={() => onRemove(id)}>
+                        Remove
+                      </button>
+                    </div>
                   </div>
+                  {why && <div className="flag flag-late small">{why} Open it to change the hours or visit length.</div>}
+                  {open && (
+                    <StopEditor
+                      stop={s}
+                      canMoveUp={false}
+                      canMoveDown={false}
+                      onUpdate={(patch) => onUpdate(id, patch)}
+                      onRemove={() => onRemove(id)}
+                      onMove={() => {}}
+                    />
+                  )}
                 </li>
               )
             })}
@@ -216,6 +233,17 @@ function StopEditor({ stop, canMoveUp, canMoveDown, onUpdate, onRemove, onMove }
   }
   return (
     <div className="editor">
+      <label className="field">
+        <span className="field-label">Name</span>
+        <input
+          type="text"
+          value={stop.name}
+          onChange={(e) => onUpdate({ name: e.target.value })}
+          onBlur={(e) => {
+            if (!e.target.value.trim()) onUpdate({ name: 'Unnamed stop' })
+          }}
+        />
+      </label>
       <div className="grid-2">
         <label className="field">
           <span className="field-label">Visit length (min)</span>
@@ -259,12 +287,16 @@ function StopEditor({ stop, canMoveUp, canMoveDown, onUpdate, onRemove, onMove }
         </div>
       )}
       <div className="btn-row">
-        <button className="btn btn-sm" disabled={!canMoveUp} onClick={() => onMove(-1)}>
-          ↑ Earlier
-        </button>
-        <button className="btn btn-sm" disabled={!canMoveDown} onClick={() => onMove(1)}>
-          ↓ Later
-        </button>
+        {(canMoveUp || canMoveDown) && (
+          <>
+            <button className="btn btn-sm" disabled={!canMoveUp} onClick={() => onMove(-1)}>
+              ↑ Earlier
+            </button>
+            <button className="btn btn-sm" disabled={!canMoveDown} onClick={() => onMove(1)}>
+              ↓ Later
+            </button>
+          </>
+        )}
         <button className="btn btn-sm btn-danger push-right" onClick={onRemove}>
           Remove
         </button>

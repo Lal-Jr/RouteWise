@@ -79,6 +79,9 @@ export function TripSettings({ trip, locked, onChange }: Props) {
           />
         </label>
       </div>
+      {trip.dayEnd <= trip.dayStart && (
+        <p className="flag flag-late small">The day ends before it starts. Set a later end time.</p>
+      )}
       <div className="grid-2">
         <div className="field">
           <span className="field-label">Travel by</span>
