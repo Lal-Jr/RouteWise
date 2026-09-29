@@ -48,4 +48,6 @@ export interface LiveState {
   currentPlaceId: string
   completed: { stopId: string; arrivedAt: Minutes; departedAt: Minutes }[]
   skipped: string[]
+  /** Advance `now` with the wall clock instead of only by hand. */
+  followClock?: boolean
 }

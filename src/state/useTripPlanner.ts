@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { buildProblem, tripPlaces, type TravelMatrix } from '../core/problem'
 import { followPlan, repairPlan, snapshot, type Change, type PlanSnapshot, type RepairStrategy } from '../core/repair'
 import { optimize, type Plan } from '../core/solver'
+import { followClock } from '../core/time'
 import type { LatLng, LiveState, Minutes, Place, Stop, Trip } from '../core/types'
 import { fetchMatrix, fetchRouteLine } from '../services/routing'
 import { demoTrip } from './demo'
@@ -62,6 +63,8 @@ export function useTripPlanner() {
   const [notice, setNotice] = useState<Notice | null>(null)
   const reason = useRef<string | null>(null)
   const silent = useRef(false)
+  /** Set for wall-clock ticks: only a change to the plan's shape is worth a banner. */
+  const tick = useRef(false)
   const noticeSeq = useRef(0)
 
   // --- Travel times -------------------------------------------------------------------------
@@ -106,7 +109,7 @@ export function useTripPlanner() {
     const next = snapshot(evaluation.plan)
     if (!sameSnapshot(next, snap)) {
       setSnap(next)
-      if (!silent.current && isNoteworthy(evaluation.strategy, evaluation.changes, live !== null)) {
+      if (!silent.current && isNoteworthy(evaluation.strategy, evaluation.changes, live !== null && !tick.current)) {
         setNotice({
           id: ++noticeSeq.current,
           reason: reason.current,
@@ -116,6 +119,7 @@ export function useTripPlanner() {
       }
     }
     silent.current = false
+    tick.current = false
     reason.current = null
   }, [evaluation, snap, setSnap, live])
 
@@ -264,6 +268,33 @@ export function useTripPlanner() {
     [live, setLive],
   )
 
+  const setFollowClock = useCallback(
+    (on: boolean) => {
+      if (!live) return
+      setLive({ ...live, followClock: on })
+    },
+    [live, setLive],
+  )
+
+  // While following real time, catch the trip clock up with the wall clock.
+  const following = live?.followClock === true
+  useEffect(() => {
+    if (!following) return
+    const sync = () => {
+      setLive((l) => {
+        if (!l) return l
+        const now = followClock(l.now, new Date())
+        if (now === l.now) return l
+        tick.current = true
+        because('Clock caught up with real time')
+        return { ...l, now }
+      })
+    }
+    sync()
+    const timer = setInterval(sync, 15_000)
+    return () => clearInterval(timer)
+  }, [following, setLive])
+
   const skipStop = useCallback(
     (id: string) => {
       if (!live) return
@@ -301,6 +332,7 @@ export function useTripPlanner() {
       completeNext,
       delay,
       setClock,
+      setFollowClock,
       skipStop,
     },
   }

@@ -131,6 +131,7 @@ export default function App() {
                 onDelay={actions.delay}
                 onSkip={actions.skipStop}
                 onSetClock={actions.setClock}
+                onFollowClock={actions.setFollowClock}
                 onEnd={actions.endTrip}
               />
             )}

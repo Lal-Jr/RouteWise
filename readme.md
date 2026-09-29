@@ -25,7 +25,7 @@ A smart travel itinerary planner. Give it a starting point and the places you wa
   3. **Drop**: leave out the lowest-priority optional stops.
 
   Dropped stops come back automatically if time frees up. A banner explains each change.
-- **Live mode.** "Start trip" steps through the day: mark stops as visited, report delays (+15, +30 or +60 minutes), skip stops or set the clock.
+- **Live mode.** "Start trip" steps through the day: mark stops as visited, report delays (+15, +30 or +60 minutes), skip stops or set the clock. Turn on **Follow real time** to have the clock catch up with the wall clock on its own.
 - **Place search and map pins.** Search for places with Nominatim, or click the map to drop a pin. Everything is saved in `localStorage`.
 
 ## Getting started
@@ -66,4 +66,4 @@ The solver is aimed at single-day trips with up to a few dozen stops. Every cand
 
 - Plans cover one day at a time.
 - The public OSRM and Nominatim servers are rate-limited and meant for light use. For production, host your own or use a commercial provider (change `src/services/routing.ts` and `src/services/geocode.ts`).
-- The live-mode clock is set by hand; it doesn't follow real time or GPS yet.
+- Live mode can follow the real clock, but your position isn't tracked by GPS. You mark each stop as visited yourself.

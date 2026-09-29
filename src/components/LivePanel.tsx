@@ -10,10 +10,11 @@ interface Props {
   onDelay: (minutes: number) => void
   onSkip: (id: string) => void
   onSetClock: (now: number) => void
+  onFollowClock: (on: boolean) => void
   onEnd: () => void
 }
 
-export function LivePanel({ live, next, nameOf, onComplete, onDelay, onSkip, onSetClock, onEnd }: Props) {
+export function LivePanel({ live, next, nameOf, onComplete, onDelay, onSkip, onSetClock, onFollowClock, onEnd }: Props) {
   return (
     <section className="card live">
       <div className="live-head">
@@ -24,6 +25,7 @@ export function LivePanel({ live, next, nameOf, onComplete, onDelay, onSkip, onS
           <input
             type="time"
             value={formatTime(live.now)}
+            disabled={live.followClock}
             onChange={(e) => {
               const m = parseTime(e.target.value)
               if (m !== null) onSetClock(m)
@@ -31,6 +33,10 @@ export function LivePanel({ live, next, nameOf, onComplete, onDelay, onSkip, onS
           />
         </label>
       </div>
+      <label className="live-follow small">
+        <input type="checkbox" checked={!!live.followClock} onChange={(e) => onFollowClock(e.target.checked)} />
+        Follow real time
+      </label>
       <p className="small muted">
         At <strong>{nameOf(live.currentPlaceId)}</strong>
         {live.completed.length > 0 && ` · ${live.completed.length} done`}

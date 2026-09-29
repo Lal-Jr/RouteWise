@@ -28,3 +28,13 @@ export function formatDuration(m: Minutes): string {
   const rest = total % 60
   return rest ? `${h}h ${rest}m` : `${h}h`
 }
+
+/**
+ * Wall-clock time as trip minutes, never earlier than `current`. Times shortly after midnight
+ * are read as the next day ("+1d") when the trip clock is still late the previous evening.
+ */
+export function followClock(current: Minutes, date: Date): Minutes {
+  let real = date.getHours() * 60 + date.getMinutes()
+  while (current - real > 720) real += 1440
+  return Math.max(current, real)
+}
