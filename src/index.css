@@ -10,6 +10,10 @@
   --muted: #6a6a6a;
   --ink: #222222;
   --ink-text: #ffffff;
+  --ink-hover: #3d3d3d;
+  /* Lines and hover fills for buttons sitting on an ink surface (the toast). */
+  --on-ink-line: rgb(255 255 255 / 40%);
+  --on-ink-hover: rgb(255 255 255 / 16%);
 
   /* Brand: a coral-to-magenta gradient for the one main action on screen. */
   --accent: #e31c5f;
@@ -53,6 +57,9 @@
     --muted: #a6a6ad;
     --ink: #f3f3f4;
     --ink-text: #121214;
+    --ink-hover: #d4d4d8;
+    --on-ink-line: rgb(18 18 20 / 40%);
+    --on-ink-hover: rgb(18 18 20 / 12%);
 
     --accent: #ff4f73;
     --accent-soft: #3a1621;

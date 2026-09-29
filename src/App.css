@@ -114,29 +114,47 @@
 }
 
 .btn {
+  /*
+   * Each variant (and each dark or light context) sets these variables for both states; the
+   * shared rules only switch between them. Hover can then never pair one rule's background
+   * with another rule's text colour and make a button's label disappear.
+   */
+  --btn-bg: var(--surface);
+  --btn-fg: var(--text);
+  --btn-border: var(--border);
+  --btn-hover-bg: var(--surface-2);
+  --btn-hover-fg: var(--btn-fg);
+  --btn-hover-border: var(--text);
+  --btn-shadow: none;
+  --btn-hover-shadow: var(--btn-shadow);
+
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: 6px;
   padding: 9px 16px;
   border-radius: 999px;
-  border: 1px solid var(--border);
-  background: var(--surface);
+  border: 1px solid var(--btn-border);
+  background: var(--btn-bg);
+  color: var(--btn-fg);
+  box-shadow: var(--btn-shadow);
   cursor: pointer;
   white-space: nowrap;
   font-weight: 600;
+  text-decoration: none;
   transition:
     background 0.15s,
     border-color 0.15s,
+    color 0.15s,
     transform 0.1s,
     box-shadow 0.15s;
-  color: inherit;
-  text-decoration: none;
 }
 
 .btn:hover:not(:disabled) {
-  background: var(--surface-2);
-  border-color: var(--text);
+  background: var(--btn-hover-bg);
+  border-color: var(--btn-hover-border);
+  color: var(--btn-hover-fg);
+  box-shadow: var(--btn-hover-shadow);
 }
 
 .btn:active:not(:disabled) {
@@ -154,48 +172,35 @@
 }
 
 .btn-primary {
-  background: var(--ink);
-  border-color: var(--ink);
-  color: var(--ink-text);
-}
-
-.btn-primary:hover:not(:disabled) {
-  background: var(--ink);
-  border-color: var(--ink);
-  filter: brightness(1.25);
+  --btn-bg: var(--ink);
+  --btn-fg: var(--ink-text);
+  --btn-border: var(--ink);
+  --btn-hover-bg: var(--ink-hover);
+  --btn-hover-border: var(--ink-hover);
 }
 
 /* The one main action on screen, in the brand gradient. */
 .btn-cta {
-  background: var(--accent-gradient);
-  border: none;
-  color: #fff;
+  --btn-bg: var(--accent-gradient);
+  --btn-fg: #fff;
+  --btn-border: transparent;
+  --btn-hover-bg: linear-gradient(90deg, #d4174a 0%, #cf1554 50%, #c0035c 100%);
+  --btn-hover-border: transparent;
+  --btn-shadow: 0 4px 12px rgb(227 28 95 / 28%);
+  --btn-hover-shadow: 0 6px 16px rgb(227 28 95 / 38%);
   padding: 10px 20px;
-  box-shadow: 0 4px 12px rgb(227 28 95 / 28%);
-}
-
-.btn-cta:hover:not(:disabled) {
-  background: var(--accent-gradient);
-  filter: brightness(1.06);
-  box-shadow: 0 6px 16px rgb(227 28 95 / 35%);
 }
 
 .btn-ghost {
-  background: transparent;
-  border-color: transparent;
-}
-
-.btn-ghost:hover:not(:disabled) {
-  border-color: transparent;
+  --btn-bg: transparent;
+  --btn-border: transparent;
+  --btn-hover-border: transparent;
 }
 
 .btn-danger {
-  color: var(--bad);
-}
-
-.btn-danger:hover:not(:disabled) {
-  border-color: var(--bad);
-  background: var(--bad-soft);
+  --btn-fg: var(--bad);
+  --btn-hover-bg: var(--bad-soft);
+  --btn-hover-border: var(--bad);
 }
 
 .icon-btn {
@@ -793,9 +798,11 @@ a:focus-visible {
 }
 
 .toast .btn {
-  background: transparent;
-  border-color: color-mix(in srgb, var(--ink-text) 40%, transparent);
-  color: inherit;
+  --btn-bg: transparent;
+  --btn-fg: var(--ink-text);
+  --btn-border: var(--on-ink-line);
+  --btn-hover-bg: var(--on-ink-hover);
+  --btn-hover-border: var(--ink-text);
 }
 
 @keyframes pop-in {
@@ -836,14 +843,11 @@ a:focus-visible {
 }
 
 .live .btn:not(.btn-cta) {
-  background: rgb(255 255 255 / 8%);
-  border-color: rgb(255 255 255 / 22%);
-  color: #fff;
-}
-
-.live .btn:not(.btn-cta):hover:not(:disabled) {
-  background: rgb(255 255 255 / 16%);
-  border-color: rgb(255 255 255 / 50%);
+  --btn-bg: rgb(255 255 255 / 8%);
+  --btn-fg: #fff;
+  --btn-border: rgb(255 255 255 / 22%);
+  --btn-hover-bg: rgb(255 255 255 / 18%);
+  --btn-hover-border: rgb(255 255 255 / 55%);
 }
 
 .live input[type='time'] {
@@ -1346,13 +1350,17 @@ a:focus-visible {
 }
 
 .leaflet-popup-content .btn {
-  color: #222;
-  background: #fff;
-  border-color: #dddddd;
+  --btn-bg: #fff;
+  --btn-fg: #222;
+  --btn-border: #dddddd;
+  --btn-hover-bg: #f2f2f2;
+  --btn-hover-border: #222;
 }
 
 .leaflet-popup-content .btn-primary {
-  background: #222;
-  border-color: #222;
-  color: #fff;
+  --btn-bg: #222;
+  --btn-fg: #fff;
+  --btn-border: #222;
+  --btn-hover-bg: #3d3d3d;
+  --btn-hover-border: #3d3d3d;
 }
