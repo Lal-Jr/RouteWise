@@ -241,7 +241,7 @@ export function useTripPlanner() {
     silent.current = true
     setLive(null)
     setSnap(EMPTY_SNAPSHOT)
-    setTrip((t) => ({ ...t, start: null, end: null, stops: [] }))
+    setTrip((t) => ({ ...t, start: null, end: null, returnToStart: true, stops: [] }))
     setNotice(null)
   }, [setLive, setSnap, setTrip, rememberForUndo])
 

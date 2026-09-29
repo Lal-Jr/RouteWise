@@ -62,17 +62,26 @@ export default function App() {
         />
         <p className="hint small muted">Or click anywhere on the map.</p>
 
-        {!trip.start && (
+        {trip.stops.length === 0 && (
           <div className="empty card">
             <strong>Plan a day</strong>
+            <ol className="steps small">
+              <li className={trip.start ? 'step-done' : ''}>Set where your day starts.</li>
+              <li>Add the places you want to visit.</li>
+              <li>Open a stop to set its opening hours, visit length and priority.</li>
+            </ol>
             <p className="small muted">
-              Set a starting point, add the places you want to see with their opening hours, and RouteWise finds a
-              feasible order. It keeps the plan working as your day changes.
+              RouteWise finds an order that fits your day and keeps it working as plans change.
             </p>
+            {!trip.start && (
+              <button className="btn btn-sm" onClick={actions.loadDemo}>
+                Try a demo day in Paris
+              </button>
+            )}
           </div>
         )}
 
-        {trip.start && schedule && plan && (
+        {trip.start && trip.stops.length > 0 && schedule && plan && (
           <>
             <section className="summary">
               <div className={`status ${schedule.feasible ? 'status-ok' : 'status-bad'}`}>
@@ -118,7 +127,7 @@ export default function App() {
                   ? 'Updating travel times…'
                   : matrix?.source === 'road'
                     ? 'Travel times from OpenStreetMap road routing'
-                    : 'Routing service unreachable: using straight-line estimates'}
+                    : 'Road routing is unavailable right now, so travel times are estimated from distance'}
               </p>
             </section>
 
@@ -153,7 +162,7 @@ export default function App() {
             />
           </>
         )}
-        {trip.start && !schedule && <p className="muted small">Fetching travel times…</p>}
+        {trip.start && trip.stops.length > 0 && !schedule && <p className="muted small">Fetching travel times…</p>}
       </aside>
 
       {undo && <UndoToast key={undo.id} entry={undo} onUndo={actions.undoLast} onDismiss={actions.dismissUndo} />}

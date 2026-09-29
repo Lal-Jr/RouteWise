@@ -744,3 +744,17 @@ button:focus-visible {
   align-items: center;
   gap: 4px;
 }
+
+.steps {
+  margin: 8px 0;
+  padding-left: 20px;
+}
+
+.steps li + li {
+  margin-top: 2px;
+}
+
+.step-done {
+  color: var(--muted);
+  text-decoration: line-through;
+}
