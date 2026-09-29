@@ -25,7 +25,8 @@ A smart travel itinerary planner. Give it a starting point and the places you wa
   3. **Drop**: leave out the lowest-priority optional stops.
 
   Dropped stops come back automatically if time frees up. A banner explains each change.
-- **Live mode.** "Start trip" steps through the day: mark stops as visited, report delays (+15, +30 or +60 minutes), skip stops or set the clock. Turn on **Follow real time** to have the clock catch up with the wall clock on its own.
+- **Live mode.** "Start trip" steps through the day: mark stops as visited, report delays (+15, +30 or +60 minutes), skip stops or set the clock. "Navigate" opens directions to the next stop in Google Maps. Turn on **Follow real time** to have the clock catch up with the wall clock on its own.
+- **Sharing.** "Share" copies a link that opens the same trip in anyone's browser. The trip is stored in the link itself; nothing is uploaded.
 - **Place search and map pins.** Search for places with Nominatim, or click the map to drop a pin. Each place can become a stop, the start or the end of the day, and you can add several stops from one search. Everything is saved in `localStorage`.
 
 ## Getting started

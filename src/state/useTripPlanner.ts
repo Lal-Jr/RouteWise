@@ -6,6 +6,7 @@ import { dayKey, followClock } from '../core/time'
 import type { LatLng, LiveState, Minutes, Place, Stop, Trip } from '../core/types'
 import { fetchMatrix, fetchRouteLine } from '../services/routing'
 import { demoTrip } from './demo'
+import { shareUrl, tripFromHash } from './share'
 
 export interface Notice {
   id: number
@@ -16,13 +17,11 @@ export interface Notice {
   saved?: Minutes
 }
 
-/** Everything needed to take back a destructive action. */
-export interface UndoEntry {
+/** A short message, optionally with everything needed to take back what it reports. */
+export interface Toast {
   id: number
   label: string
-  trip: Trip
-  live: LiveState | null
-  snap: PlanSnapshot
+  restore?: { trip: Trip; live: LiveState | null; snap: PlanSnapshot }
 }
 
 const EMPTY_SNAPSHOT: PlanSnapshot = { order: [], dropped: [], starts: {} }
@@ -75,14 +74,26 @@ export function useTripPlanner() {
   /** Set for wall-clock ticks: only a change to the plan's shape is worth a banner. */
   const tick = useRef(false)
   const noticeSeq = useRef(0)
-  const [undo, setUndo] = useState<UndoEntry | null>(null)
+  const [toast, setToast] = useState<Toast | null>(null)
   const current = useRef({ trip, live, snap })
   current.current = { trip, live, snap }
 
   /** Remembers the state before a destructive action so it can be taken back. */
   const rememberForUndo = useCallback((label: string) => {
-    setUndo({ id: ++noticeSeq.current, label, ...current.current })
+    setToast({ id: ++noticeSeq.current, label, restore: current.current })
   }, [])
+
+  // Opening a share link replaces the trip; the previous one stays one Undo away.
+  useEffect(() => {
+    const shared = tripFromHash(window.location.hash)
+    if (!shared) return
+    history.replaceState(null, '', window.location.pathname + window.location.search)
+    if (current.current.trip.stops.length > 0) rememberForUndo('Opened a shared trip')
+    silent.current = true
+    setLive(null)
+    setSnap(EMPTY_SNAPSHOT)
+    setTrip(shared)
+  }, [rememberForUndo, setLive, setSnap, setTrip])
 
   // --- Travel times -------------------------------------------------------------------------
   const places = useMemo(() => tripPlaces(trip), [trip])
@@ -246,17 +257,27 @@ export function useTripPlanner() {
   }, [setLive, setSnap, setTrip, rememberForUndo])
 
   // Stable, so the toast's auto-hide timer isn't restarted on every render.
-  const dismissUndo = useCallback(() => setUndo(null), [])
+  const dismissToast = useCallback(() => setToast(null), [])
 
   const undoLast = useCallback(() => {
-    if (!undo) return
+    if (!toast?.restore) return
     silent.current = true
-    setTrip(undo.trip)
-    setLive(undo.live)
-    setSnap(undo.snap)
+    setTrip(toast.restore.trip)
+    setLive(toast.restore.live)
+    setSnap(toast.restore.snap)
     setNotice(null)
-    setUndo(null)
-  }, [undo, setTrip, setLive, setSnap])
+    setToast(null)
+  }, [toast, setTrip, setLive, setSnap])
+
+  const shareTrip = useCallback(async () => {
+    const url = shareUrl(current.current.trip)
+    try {
+      await navigator.clipboard.writeText(url)
+      setToast({ id: ++noticeSeq.current, label: 'Link to this trip copied' })
+    } catch {
+      window.prompt('Copy this link to share the trip:', url)
+    }
+  }, [])
 
   // --- Live trip ---------------------------------------------------------------------------------
   const startTrip = useCallback(() => {
@@ -351,7 +372,7 @@ export function useTripPlanner() {
     matrix,
     matrixLoading,
     notice,
-    undo,
+    toast,
     autoRepair,
     placeById,
     remainingLine,
@@ -368,7 +389,8 @@ export function useTripPlanner() {
       setAutoRepair,
       dismissNotice: () => setNotice(null),
       undoLast,
-      dismissUndo,
+      dismissToast,
+      shareTrip,
       startTrip,
       endTrip,
       completeNext,

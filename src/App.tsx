@@ -5,14 +5,14 @@ import { MapView } from './components/MapView'
 import { NoticeBanner } from './components/NoticeBanner'
 import { SearchBox } from './components/SearchBox'
 import { TripSettings } from './components/TripSettings'
-import { UndoToast } from './components/UndoToast'
+import { Toast } from './components/Toast'
 import { formatDuration, formatTime } from './core/time'
 import type { Place, PlaceRole } from './core/types'
 import { newId, useTripPlanner } from './state/useTripPlanner'
 import './App.css'
 
 export default function App() {
-  const { trip, live, plan, matrix, matrixLoading, notice, undo, autoRepair, placeById, remainingLine, doneLine, actions } =
+  const { trip, live, plan, matrix, matrixLoading, notice, toast, autoRepair, placeById, remainingLine, doneLine, actions } =
     useTripPlanner()
   const [selectedId, setSelectedId] = useState<string | null>(null)
 
@@ -43,6 +43,11 @@ export default function App() {
             <h1>RouteWise</h1>
           </div>
           <div className="btn-row">
+            {trip.start && (
+              <button className="btn btn-sm btn-ghost" onClick={actions.shareTrip}>
+                Share
+              </button>
+            )}
             <button className="btn btn-sm btn-ghost" onClick={actions.loadDemo}>
               Demo trip
             </button>
@@ -165,7 +170,7 @@ export default function App() {
         {trip.start && trip.stops.length > 0 && !schedule && <p className="muted small">Fetching travel times…</p>}
       </aside>
 
-      {undo && <UndoToast key={undo.id} entry={undo} onUndo={actions.undoLast} onDismiss={actions.dismissUndo} />}
+      {toast && <Toast key={toast.id} entry={toast} onUndo={actions.undoLast} onDismiss={actions.dismissToast} />}
 
       <main className="map-pane">
         <MapView
