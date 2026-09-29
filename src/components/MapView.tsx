@@ -65,10 +65,9 @@ export function MapView({ trip, plan, live, remainingLine, doneLine, selectedId,
         }}
       />
 
-      {doneLine.length > 1 && <Polyline positions={toLatLngs(doneLine)} pathOptions={{ className: 'route-done' }} />}
-      {remainingLine.length > 1 && (
-        <Polyline positions={toLatLngs(remainingLine)} pathOptions={{ className: 'route-line' }} />
-      )}
+      {/* className must be a direct prop: react-leaflet applies pathOptions with setStyle, which ignores it. */}
+      {doneLine.length > 1 && <Polyline positions={toLatLngs(doneLine)} className="route-done" />}
+      {remainingLine.length > 1 && <Polyline positions={toLatLngs(remainingLine)} className="route-line" />}
 
       {trip.start && (
         <Marker position={[trip.start.lat, trip.start.lng]} icon={icon(HOME_SVG, 'pin-start')} zIndexOffset={-500}>
