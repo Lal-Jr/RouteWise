@@ -16,6 +16,15 @@ export interface Notice {
   saved?: Minutes
 }
 
+/** Everything needed to take back a destructive action. */
+export interface UndoEntry {
+  id: number
+  label: string
+  trip: Trip
+  live: LiveState | null
+  snap: PlanSnapshot
+}
+
 const EMPTY_SNAPSHOT: PlanSnapshot = { order: [], dropped: [], starts: {} }
 
 function usePersistent<T>(key: string, initial: T): [T, React.Dispatch<React.SetStateAction<T>>] {
@@ -66,6 +75,14 @@ export function useTripPlanner() {
   /** Set for wall-clock ticks: only a change to the plan's shape is worth a banner. */
   const tick = useRef(false)
   const noticeSeq = useRef(0)
+  const [undo, setUndo] = useState<UndoEntry | null>(null)
+  const current = useRef({ trip, live, snap })
+  current.current = { trip, live, snap }
+
+  /** Remembers the state before a destructive action so it can be taken back. */
+  const rememberForUndo = useCallback((label: string) => {
+    setUndo({ id: ++noticeSeq.current, label, ...current.current })
+  }, [])
 
   // --- Travel times -------------------------------------------------------------------------
   const places = useMemo(() => tripPlaces(trip), [trip])
@@ -174,9 +191,11 @@ export function useTripPlanner() {
 
   const removeStop = useCallback(
     (id: string) => {
+      const s = current.current.trip.stops.find((x) => x.id === id)
+      rememberForUndo(`Removed ${s?.name ?? 'stop'}`)
       setTrip((t) => ({ ...t, stops: t.stops.filter((s) => s.id !== id) }))
     },
-    [setTrip],
+    [setTrip, rememberForUndo],
   )
 
   /** Manually moves a stop within the itinerary; auto-repair may undo it if it breaks feasibility. */
@@ -209,20 +228,35 @@ export function useTripPlanner() {
   }, [problem, plan, setSnap])
 
   const loadDemo = useCallback(() => {
+    if (current.current.trip.stops.length > 0) rememberForUndo('Loaded the demo trip')
     silent.current = true
     setLive(null)
     setSnap(EMPTY_SNAPSHOT)
     setTrip(demoTrip)
     setNotice(null)
-  }, [setLive, setSnap, setTrip])
+  }, [setLive, setSnap, setTrip, rememberForUndo])
 
   const clearTrip = useCallback(() => {
+    if (current.current.trip.start || current.current.trip.stops.length > 0) rememberForUndo('Started a new trip')
     silent.current = true
     setLive(null)
     setSnap(EMPTY_SNAPSHOT)
     setTrip((t) => ({ ...t, start: null, end: null, stops: [] }))
     setNotice(null)
-  }, [setLive, setSnap, setTrip])
+  }, [setLive, setSnap, setTrip, rememberForUndo])
+
+  // Stable, so the toast's auto-hide timer isn't restarted on every render.
+  const dismissUndo = useCallback(() => setUndo(null), [])
+
+  const undoLast = useCallback(() => {
+    if (!undo) return
+    silent.current = true
+    setTrip(undo.trip)
+    setLive(undo.live)
+    setSnap(undo.snap)
+    setNotice(null)
+    setUndo(null)
+  }, [undo, setTrip, setLive, setSnap])
 
   // --- Live trip ---------------------------------------------------------------------------------
   const startTrip = useCallback(() => {
@@ -312,6 +346,7 @@ export function useTripPlanner() {
     matrix,
     matrixLoading,
     notice,
+    undo,
     autoRepair,
     placeById,
     remainingLine,
@@ -327,6 +362,8 @@ export function useTripPlanner() {
       clearTrip,
       setAutoRepair,
       dismissNotice: () => setNotice(null),
+      undoLast,
+      dismissUndo,
       startTrip,
       endTrip,
       completeNext,
