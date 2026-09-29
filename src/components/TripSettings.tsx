@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import { formatTime, parseTime } from '../core/time'
 import type { Trip, TravelMode } from '../core/types'
 import { Icon, type IconName } from './Icon'
@@ -15,8 +16,37 @@ const MODES: { mode: TravelMode; label: string; icon: IconName }[] = [
 ]
 
 export function TripSettings({ trip, locked, onChange }: Props) {
+  // Collapsed to one line once the day has stops, so the plan is what you see first.
+  const [expanded, setExpanded] = useState(() => !trip.start || trip.stops.length === 0)
+  const open = expanded || !trip.start
+  const mode = MODES.find((m) => m.mode === trip.mode) ?? MODES[0]
+
+  if (!open) {
+    const end = trip.returnToStart ? 'round trip' : `ends at ${trip.end ? trip.end.name : 'last stop'}`
+    return (
+      <button className="card settings-summary" onClick={() => setExpanded(true)} aria-expanded={false}>
+        <span className="settings-summary-main">
+          <strong>{trip.start?.name}</strong>
+          <span className="muted small">
+            {formatTime(trip.dayStart)}–{formatTime(trip.dayEnd)} · {end}
+          </span>
+        </span>
+        <span className="settings-summary-mode">
+          <Icon name={mode.icon} size={16} />
+          {mode.label}
+        </span>
+        <span className="settings-summary-edit">Edit</span>
+      </button>
+    )
+  }
+
   return (
     <section className="card settings">
+      {trip.start && trip.stops.length > 0 && (
+        <button className="btn btn-sm btn-ghost settings-done" onClick={() => setExpanded(false)}>
+          Done
+        </button>
+      )}
       <div className="field-row">
         <span className="field-label">Start</span>
         <span className="field-value">{trip.start?.name ?? <em className="muted">Search below or click the map, then “Set start”</em>}</span>
