@@ -1,8 +1,10 @@
 # RouteWise
 
+**Live: [lal-jr.github.io/RouteWise](https://lal-jr.github.io/RouteWise/)**
+
 A smart travel itinerary planner. Give it a starting point and the places you want to visit, with opening hours, visit length and priority. RouteWise finds a feasible order using real road, bike or walking travel times. While you travel, it **automatically repairs the schedule** when things change.
 
-![Demo: the Paris walking day, a stop's details, then live mode: a stop is visited, the trip runs an hour late and the plan repairs itself](docs/media/demo.gif)
+![Demo: the Paris walking day, a stop's visit length is changed, then live mode: a stop is visited, the trip runs an hour late and the plan repairs itself](docs/media/demo.gif)
 
 ## Screenshots
 
@@ -10,13 +12,16 @@ A smart travel itinerary planner. Give it a starting point and the places you wa
   <img src="docs/media/plan.jpg" width="100%" alt="The planned day: stops ordered around opening hours, with walking routes drawn along real roads">
 </p>
 <p>
-  <img src="docs/media/stop.jpg" width="49%" alt="A stop expanded to edit its visit length, priority and opening hours">
+  <img src="docs/media/stop.jpg" width="49%" alt="A stop expanded to edit its name, visit length, priority and opening hours">
   <img src="docs/media/repair.jpg" width="49%" alt="Live mode after reporting an hour's delay: the repair banner lists the dropped, restored, moved and retimed stops">
+</p>
+<p align="center">
+  <img src="docs/media/phone.jpg" width="300" alt="On a phone: the map on top with pill markers showing each stop's number and time, and the day's plan in a bottom sheet">
 </p>
 
 ## Features
 
-- **Map-based routing.** Travel times come from OpenStreetMap routing (the FOSSGIS OSRM car, bike and foot servers). If the routing service is unreachable, RouteWise estimates times from straight-line distance. Routes are drawn along real roads.
+- **Map-based routing.** Travel times come from OpenStreetMap routing (the FOSSGIS OSRM car, bike and foot servers) and are cached in the browser, so a trip you've planned before opens instantly. If the routing service is unreachable, RouteWise estimates times from straight-line distance. Routes are drawn along real roads.
 - **Time-window constraints.** Each stop has opening hours, a visit length and a priority (*must visit*, *high*, *normal*, *nice to have*). The day has a start time, an end time and an optional return to the start point. You can add a buffer to every leg.
 - **Optimization.** The optimizer first builds an order by cheapest insertion, then improves it with local search (relocate, swap and 2-opt moves). When not everything fits, it drops the lowest-priority stops that make the day work, and never drops *must visit* stops.
 - **Automatic schedule repair.** After every change (running late, a changed visit length or opening hours, a new stop, a skipped stop), the plan is repaired with the least disruption it needs. It escalates only as far as necessary:
@@ -27,6 +32,7 @@ A smart travel itinerary planner. Give it a starting point and the places you wa
   Dropped stops come back automatically if time frees up. A banner explains each change.
 - **Live mode.** "Start trip" steps through the day: mark stops as visited, report delays (+15, +30 or +60 minutes), skip stops or set the clock. "Navigate" opens directions to the next stop in Google Maps. Turn on **Follow real time** to have the clock catch up with the wall clock on its own.
 - **Sharing.** "Share" copies a link that opens the same trip in anyone's browser. The trip is stored in the link itself; nothing is uploaded.
+- **Designed for travel.** A light, warm interface with a pill search bar, map markers that show each stop's number and time, itinerary cards joined by travel legs, a bold "Next up" card in live mode, a bottom sheet on phones, and dark mode.
 - **Place search and map pins.** Search for places with Nominatim, or click the map to drop a pin. Each place can become a stop, the start or the end of the day, and you can add several stops from one search. Everything is saved in `localStorage`.
 
 ## Getting started
