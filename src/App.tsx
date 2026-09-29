@@ -127,6 +127,8 @@ export default function App() {
               <LivePanel
                 live={live}
                 next={schedule.visits[0]}
+                nextPlace={schedule.visits[0] && placeById.get(schedule.visits[0].stopId)}
+                mode={trip.mode}
                 nameOf={nameOf}
                 onComplete={actions.completeNext}
                 onDelay={actions.delay}

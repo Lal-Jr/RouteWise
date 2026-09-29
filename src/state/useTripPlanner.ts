@@ -2,7 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { buildProblem, tripPlaces, type TravelMatrix } from '../core/problem'
 import { followPlan, repairPlan, snapshot, type Change, type PlanSnapshot, type RepairStrategy } from '../core/repair'
 import { optimize, type Plan } from '../core/solver'
-import { followClock } from '../core/time'
+import { dayKey, followClock } from '../core/time'
 import type { LatLng, LiveState, Minutes, Place, Stop, Trip } from '../core/types'
 import { fetchMatrix, fetchRouteLine } from '../services/routing'
 import { demoTrip } from './demo'
@@ -261,7 +261,7 @@ export function useTripPlanner() {
   // --- Live trip ---------------------------------------------------------------------------------
   const startTrip = useCallback(() => {
     if (!trip.start) return
-    setLive({ now: trip.dayStart, currentPlaceId: trip.start.id, completed: [], skipped: [] })
+    setLive({ now: trip.dayStart, day: dayKey(new Date()), currentPlaceId: trip.start.id, completed: [], skipped: [] })
     setNotice(null)
   }, [trip.start, trip.dayStart, setLive])
 
@@ -275,14 +275,19 @@ export function useTripPlanner() {
   const completeNext = useCallback(() => {
     const visit = plan?.schedule.visits[0]
     if (!live || !visit) return
-    silent.current = true // following the plan as scheduled is not a disruption
+    // By hand, the stop is taken as done on schedule; following real time, you're leaving now.
+    const departedAt = live.followClock
+      ? Math.max(visit.arrival, followClock(live.now, new Date(), live.day))
+      : visit.end
+    silent.current = departedAt === visit.end // following the plan as scheduled is not a disruption
+    if (!silent.current) because(`Left ${placeById.get(visit.stopId)?.name ?? 'stop'} at a different time`)
     setLive({
       ...live,
-      now: visit.end,
+      now: departedAt,
       currentPlaceId: visit.stopId,
-      completed: [...live.completed, { stopId: visit.stopId, arrivedAt: visit.arrival, departedAt: visit.end }],
+      completed: [...live.completed, { stopId: visit.stopId, arrivedAt: visit.arrival, departedAt }],
     })
-  }, [plan, live, setLive])
+  }, [plan, live, setLive, placeById])
 
   const delay = useCallback(
     (minutes: Minutes, why = `Running ${minutes} min late`) => {
@@ -317,7 +322,7 @@ export function useTripPlanner() {
     const sync = () => {
       setLive((l) => {
         if (!l) return l
-        const now = followClock(l.now, new Date())
+        const now = followClock(l.now, new Date(), l.day)
         if (now === l.now) return l
         tick.current = true
         because('Clock caught up with real time')

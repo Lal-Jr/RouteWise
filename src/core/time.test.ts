@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { followClock } from './time'
+import { dayKey, followClock } from './time'
 
 const at = (h: number, m: number) => new Date(2026, 0, 1, h, m)
 
@@ -14,5 +14,9 @@ describe('followClock', () => {
 
   it('reads times just after midnight as the next day', () => {
     expect(followClock(23 * 60 + 50, at(0, 10))).toBe(1440 + 10)
+  })
+
+  it('counts from the trip day, so the next morning is +1d', () => {
+    expect(followClock(20 * 60, at(9, 0), dayKey(new Date(2025, 11, 31)))).toBe(1440 + 9 * 60)
   })
 })

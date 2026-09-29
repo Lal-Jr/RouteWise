@@ -48,6 +48,8 @@ export interface LiveState {
   currentPlaceId: string
   completed: { stopId: string; arrivedAt: Minutes; departedAt: Minutes }[]
   skipped: string[]
+  /** Calendar day the trip is travelled on ("2026-09-29"); `now` counts from its midnight. */
+  day?: string
   /** Advance `now` with the wall clock instead of only by hand. */
   followClock?: boolean
 }

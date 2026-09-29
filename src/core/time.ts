@@ -29,12 +29,32 @@ export function formatDuration(m: Minutes): string {
   return rest ? `${h}h ${rest}m` : `${h}h`
 }
 
+/** Local calendar date as "2026-09-29". */
+export function dayKey(date: Date): string {
+  const m = String(date.getMonth() + 1).padStart(2, '0')
+  const d = String(date.getDate()).padStart(2, '0')
+  return `${date.getFullYear()}-${m}-${d}`
+}
+
+/** Minutes from midnight at the start of `day` ("2026-09-29") until `date`. */
+export function minutesSince(day: string, date: Date): Minutes {
+  const [y, m, d] = day.split('-').map(Number)
+  return Math.floor((date.getTime() - new Date(y, m - 1, d).getTime()) / 60_000)
+}
+
 /**
- * Wall-clock time as trip minutes, never earlier than `current`. Times shortly after midnight
- * are read as the next day ("+1d") when the trip clock is still late the previous evening.
+ * Wall-clock time as trip minutes, never earlier than `current`. With the trip's `day` the
+ * result counts from that day's midnight, so the next morning reads as "+1d". Without it,
+ * times shortly after midnight are read as the next day when the clock is still late the
+ * previous evening.
  */
-export function followClock(current: Minutes, date: Date): Minutes {
-  let real = date.getHours() * 60 + date.getMinutes()
-  while (current - real > 720) real += 1440
+export function followClock(current: Minutes, date: Date, day?: string): Minutes {
+  let real: Minutes
+  if (day) {
+    real = minutesSince(day, date)
+  } else {
+    real = date.getHours() * 60 + date.getMinutes()
+    while (current - real > 720) real += 1440
+  }
   return Math.max(current, real)
 }
