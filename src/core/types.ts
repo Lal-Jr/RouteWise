@@ -20,6 +20,9 @@ export interface TimeWindow {
 /** `must` stops are never dropped by the optimizer or by repair. */
 export type Priority = 'must' | 'high' | 'normal' | 'low'
 
+/** What a picked place becomes: a stop to visit, or where the day starts or ends. */
+export type PlaceRole = 'stop' | 'start' | 'end'
+
 export interface Stop extends Place {
   duration: Minutes
   window?: TimeWindow

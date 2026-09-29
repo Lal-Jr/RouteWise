@@ -2,7 +2,7 @@ import L from 'leaflet'
 import { useEffect, useMemo, useState } from 'react'
 import { MapContainer, Marker, Polyline, Popup, TileLayer, Tooltip, useMap, useMapEvents } from 'react-leaflet'
 import type { Plan } from '../core/solver'
-import type { LatLng, LiveState, Place, Trip } from '../core/types'
+import type { LatLng, LiveState, Place, PlaceRole, Trip } from '../core/types'
 import { reverseGeocode } from '../services/geocode'
 
 interface Props {
@@ -13,7 +13,7 @@ interface Props {
   doneLine: LatLng[]
   selectedId: string | null
   onSelect: (id: string) => void
-  onAddPlace: (place: Omit<Place, 'id'>, as: 'stop' | 'start') => void
+  onAddPlace: (place: Omit<Place, 'id'>, as: PlaceRole) => void
 }
 
 const icon = (html: string, className: string) =>
@@ -129,6 +129,16 @@ export function MapView({ trip, plan, live, remainingLine, doneLine, selectedId,
               >
                 Set start
               </button>
+              <button
+                className="btn btn-sm"
+                disabled={!pending.name || !!live}
+                onClick={() => {
+                  onAddPlace({ name: pending.name!, lat: pending.lat, lng: pending.lng }, 'end')
+                  setPending(null)
+                }}
+              >
+                Set end
+              </button>
             </div>
           </div>
         </Popup>
@@ -153,7 +163,7 @@ function PanTo({ point }: { point: LatLng | null }) {
 /** Refit the view whenever the set of places changes (not on every edit). */
 function FitToTrip({ trip }: { trip: Trip }) {
   const map = useMap()
-  const points = [trip.start, ...trip.stops].filter((p): p is Place => !!p)
+  const points = [trip.start, ...(trip.returnToStart ? [] : [trip.end]), ...trip.stops].filter((p): p is Place => !!p)
   const key = points.map((p) => p.id).join('|')
   useEffect(() => {
     if (points.length === 0) return

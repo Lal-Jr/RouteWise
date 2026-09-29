@@ -267,9 +267,10 @@ button:focus-visible {
 
 .search-results li {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   justify-content: space-between;
-  gap: 10px;
+  gap: 6px 10px;
   padding: 8px 12px;
 }
 
@@ -279,6 +280,7 @@ button:focus-visible {
 
 .search-result-text {
   display: flex;
+  flex: 1 1 160px;
   flex-direction: column;
   min-width: 0;
 }
@@ -292,7 +294,7 @@ button:focus-visible {
 .search-result-actions {
   display: flex;
   gap: 6px;
-  flex-shrink: 0;
+  margin-left: auto;
 }
 
 .hint {
@@ -731,4 +733,14 @@ button:focus-visible {
 .leaflet-popup-content .btn:not(.btn-primary) {
   background: #fff;
   border-color: #d1d5db;
+}
+
+.search-done {
+  justify-content: flex-end;
+}
+
+.end-value {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
 }

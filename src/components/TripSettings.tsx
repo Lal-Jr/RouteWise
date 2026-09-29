@@ -18,7 +18,7 @@ export function TripSettings({ trip, locked, onChange }: Props) {
     <section className="card settings">
       <div className="field-row">
         <span className="field-label">Start</span>
-        <span className="field-value">{trip.start?.name ?? <em className="muted">Search below and “Set start”</em>}</span>
+        <span className="field-value">{trip.start?.name ?? <em className="muted">Search below or click the map, then “Set start”</em>}</span>
       </div>
       <div className="field-row">
         <span className="field-label">End</span>
@@ -32,6 +32,28 @@ export function TripSettings({ trip, locked, onChange }: Props) {
           Return to start
         </label>
       </div>
+      {!trip.returnToStart && (
+        <div className="field-row">
+          <span className="field-label" />
+          {trip.end ? (
+            <span className="field-value end-value">
+              {trip.end.name}
+              {!locked && (
+                <button
+                  className="icon-btn"
+                  aria-label="Clear end point"
+                  title="End wherever the last stop is"
+                  onClick={() => onChange({ end: null }, 'Changed end point')}
+                >
+                  ×
+                </button>
+              )}
+            </span>
+          ) : (
+            <em className="field-value muted small">Ends at the last stop. Use “Set end” to pick a place.</em>
+          )}
+        </div>
+      )}
       <div className="grid-2">
         <label className="field">
           <span className="field-label">Day starts</span>

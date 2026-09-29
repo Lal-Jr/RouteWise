@@ -1,20 +1,22 @@
 import { useState } from 'react'
-import type { LatLng } from '../core/types'
+import type { LatLng, PlaceRole } from '../core/types'
 import { searchPlaces, type SearchResult } from '../services/geocode'
 
 interface Props {
   near?: LatLng
   placeholder: string
-  onPick: (result: SearchResult, as: 'stop' | 'start') => void
-  /** Offer "Set as start" next to "Add stop". */
-  allowStart?: boolean
+  onPick: (result: SearchResult, as: PlaceRole) => void
+  /** Offer "Set start" and "Set end" next to "Add stop". */
+  allowAnchors?: boolean
 }
 
-export function SearchBox({ near, placeholder, onPick, allowStart = true }: Props) {
+export function SearchBox({ near, placeholder, onPick, allowAnchors = true }: Props) {
   const [query, setQuery] = useState('')
   const [results, setResults] = useState<SearchResult[] | null>(null)
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  /** Results already added as stops, so several can be added from one search. */
+  const [added, setAdded] = useState<Set<number>>(new Set())
 
   async function submit(e: React.FormEvent) {
     e.preventDefault()
@@ -23,6 +25,7 @@ export function SearchBox({ near, placeholder, onPick, allowStart = true }: Prop
     setError(null)
     try {
       setResults(await searchPlaces(query.trim(), near))
+      setAdded(new Set())
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Search failed')
       setResults(null)
@@ -31,8 +34,16 @@ export function SearchBox({ near, placeholder, onPick, allowStart = true }: Prop
     }
   }
 
-  function pick(r: SearchResult, as: 'stop' | 'start') {
+  function pick(r: SearchResult, i: number, as: PlaceRole) {
     onPick(r, as)
+    if (as === 'stop') {
+      setAdded((a) => new Set(a).add(i))
+      return
+    }
+    close()
+  }
+
+  function close() {
     setResults(null)
     setQuery('')
   }
@@ -54,7 +65,7 @@ export function SearchBox({ near, placeholder, onPick, allowStart = true }: Prop
       {error && <p className="muted small error-text">{error}</p>}
       {results && (
         <ul className="search-results">
-          {results.length === 0 && <li className="muted small">No places found.</li>}
+          {results.length === 0 && <li className="muted small">No places found. Try adding the city name.</li>}
           {results.map((r, i) => (
             <li key={`${r.lat},${r.lng},${i}`}>
               <div className="search-result-text">
@@ -62,17 +73,29 @@ export function SearchBox({ near, placeholder, onPick, allowStart = true }: Prop
                 <span className="muted small">{r.detail}</span>
               </div>
               <div className="search-result-actions">
-                <button className="btn btn-primary btn-sm" onClick={() => pick(r, 'stop')}>
-                  Add stop
+                <button className="btn btn-primary btn-sm" disabled={added.has(i)} onClick={() => pick(r, i, 'stop')}>
+                  {added.has(i) ? 'Added ✓' : 'Add stop'}
                 </button>
-                {allowStart && (
-                  <button className="btn btn-sm" onClick={() => pick(r, 'start')}>
-                    Set start
-                  </button>
+                {allowAnchors && (
+                  <>
+                    <button className="btn btn-sm" onClick={() => pick(r, i, 'start')}>
+                      Set start
+                    </button>
+                    <button className="btn btn-sm" onClick={() => pick(r, i, 'end')}>
+                      Set end
+                    </button>
+                  </>
                 )}
               </div>
             </li>
           ))}
+          {results.length > 0 && (
+            <li className="search-done">
+              <button className="btn btn-sm btn-ghost" onClick={close}>
+                {added.size > 0 ? 'Done' : 'Close'}
+              </button>
+            </li>
+          )}
         </ul>
       )}
     </div>

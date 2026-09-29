@@ -7,7 +7,7 @@ import { SearchBox } from './components/SearchBox'
 import { TripSettings } from './components/TripSettings'
 import { UndoToast } from './components/UndoToast'
 import { formatDuration, formatTime } from './core/time'
-import type { Place } from './core/types'
+import type { Place, PlaceRole } from './core/types'
 import { newId, useTripPlanner } from './state/useTripPlanner'
 import './App.css'
 
@@ -18,8 +18,9 @@ export default function App() {
 
   const nameOf = useCallback((id: string) => placeById.get(id)?.name ?? 'Unknown place', [placeById])
 
-  const addPlace = (place: Omit<Place, 'id'>, as: 'stop' | 'start') => {
+  const addPlace = (place: Omit<Place, 'id'>, as: PlaceRole) => {
     if (as === 'start') actions.updateTrip({ start: { id: `start-${newId()}`, ...place } }, 'Changed start')
+    else if (as === 'end') actions.updateTrip({ end: { id: `end-${newId()}`, ...place }, returnToStart: false }, 'Changed end point')
     else actions.addStop(place)
   }
 
@@ -57,7 +58,7 @@ export default function App() {
           near={trip.start ?? undefined}
           placeholder={trip.start ? 'Add a place (museum, café, address…)' : 'Where does your day start?'}
           onPick={(r, as) => addPlace({ name: r.name, lat: r.lat, lng: r.lng }, as)}
-          allowStart={!live}
+          allowAnchors={!live}
         />
         <p className="hint small muted">Or click anywhere on the map.</p>
 
