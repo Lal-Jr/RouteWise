@@ -630,6 +630,11 @@ a:focus-visible {
   color: var(--ok);
 }
 
+.status-warn {
+  background: var(--warn-soft);
+  color: var(--warn);
+}
+
 .status-bad {
   background: var(--bad-soft);
   color: var(--bad);
@@ -1160,6 +1165,15 @@ a:focus-visible {
 .pin span {
   font-weight: 700;
   font-variant-numeric: tabular-nums;
+}
+
+/* Zoomed out, pins drop their times so neighbours don't pile up. */
+.map-compact .pin-stop {
+  padding: 4px;
+}
+
+.map-compact .pin-stop span {
+  display: none;
 }
 
 .pin-late {

@@ -18,13 +18,16 @@ interface NominatimPlace {
   display_name: string
 }
 
-function toResult(p: NominatimPlace): SearchResult {
-  const [first, ...rest] = p.display_name.split(', ')
+export function toResult(p: NominatimPlace): SearchResult {
+  const parts = p.display_name.split(', ')
+  // Buildings without a name start with their house number ("141, Rue de Rivoli, …"):
+  // keep the street with it so the stop isn't just called "141".
+  const take = !p.name && /^\d/.test(parts[0]) && parts.length > 1 ? 2 : 1
   return {
     lat: Number(p.lat),
     lng: Number(p.lon),
-    name: p.name || first,
-    detail: rest.slice(0, 3).join(', '),
+    name: p.name || parts.slice(0, take).join(' '),
+    detail: parts.slice(take, take + 3).join(', '),
   }
 }
 

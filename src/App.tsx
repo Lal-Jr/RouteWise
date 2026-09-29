@@ -91,8 +91,12 @@ export default function App() {
             <section className="summary">
               <div className="summary-head">
                 <h2>Your day</h2>
-                <div className={`status ${schedule.feasible ? 'status-ok' : 'status-bad'}`}>
-                  {schedule.feasible ? 'Everything fits' : `${issues} timing issue${issues === 1 ? '' : 's'}`}
+                <div className={`status ${!schedule.feasible ? 'status-bad' : plan.dropped.length > 0 ? 'status-warn' : 'status-ok'}`}>
+                  {!schedule.feasible
+                    ? `${issues} timing issue${issues === 1 ? '' : 's'}`
+                    : plan.dropped.length > 0
+                      ? `${plan.dropped.length} didn’t fit`
+                      : 'Everything fits'}
                 </div>
               </div>
               <dl className="stats">

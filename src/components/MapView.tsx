@@ -56,6 +56,8 @@ export function MapView({ trip, plan, live, remainingLine, doneLine, selectedId,
         maxZoom={19}
       />
       <FitToTrip trip={trip} />
+      <KeepSized />
+      <CompactWhenZoomedOut />
       <PanTo point={trip.stops.find((s) => s.id === selectedId) ?? null} />
       <ClickToAdd
         onClick={async (p) => {
@@ -169,6 +171,33 @@ function PanTo({ point }: { point: LatLng | null }) {
   useEffect(() => {
     if (point) map.panTo([point.lat, point.lng])
   }, [point?.lat, point?.lng, map]) // eslint-disable-line react-hooks/exhaustive-deps
+  return null
+}
+
+/** Leaflet measures its container once; re-measure whenever the layout resizes it. */
+function KeepSized() {
+  const map = useMap()
+  useEffect(() => {
+    const observer = new ResizeObserver(() => map.invalidateSize())
+    observer.observe(map.getContainer())
+    return () => observer.disconnect()
+  }, [map])
+  return null
+}
+
+/** Below street level, pins show only their number; times come back when zoomed in. */
+const COMPACT_BELOW_ZOOM = 14
+
+function CompactWhenZoomedOut() {
+  const map = useMap()
+  useEffect(() => {
+    const update = () => map.getContainer().classList.toggle('map-compact', map.getZoom() < COMPACT_BELOW_ZOOM)
+    update()
+    map.on('zoomend', update)
+    return () => {
+      map.off('zoomend', update)
+    }
+  }, [map])
   return null
 }
 
