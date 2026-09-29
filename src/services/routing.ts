@@ -56,19 +56,55 @@ interface OsrmTable {
   distances: (number | null)[][]
 }
 
+/*
+ * Road matrices are cached in localStorage by mode and coordinates. Reloading the page or
+ * reopening a trip then plans instantly, and the rate-limited public server sees one request
+ * per distinct set of places instead of one per page load.
+ */
+const CACHE_KEY = 'routewise.matrixCache'
+const CACHE_ENTRIES = 12
+
+type MatrixCache = Record<string, { at: number; matrix: TravelMatrix }>
+
+function readCache(): MatrixCache {
+  try {
+    return JSON.parse(localStorage.getItem(CACHE_KEY) ?? '{}') as MatrixCache
+  } catch {
+    return {}
+  }
+}
+
+function writeCache(key: string, matrix: TravelMatrix) {
+  const cache = readCache()
+  cache[key] = { at: Date.now(), matrix }
+  const newest = Object.entries(cache)
+    .sort((a, b) => b[1].at - a[1].at)
+    .slice(0, CACHE_ENTRIES)
+  try {
+    localStorage.setItem(CACHE_KEY, JSON.stringify(Object.fromEntries(newest)))
+  } catch {
+    // Storage full or unavailable: the matrix is simply fetched again next time.
+  }
+}
+
 export async function fetchMatrix(places: Place[], mode: TravelMode, signal?: AbortSignal): Promise<TravelMatrix> {
   if (places.length < 2) return estimateMatrix(places, mode)
+  const cacheKey = `${mode}|${places.map((p) => `${p.id}@${coordList([p])}`).join(';')}`
+  const cached = readCache()[cacheKey]
+  if (cached) return cached.matrix
   try {
     const url = `${OSRM_BASE[mode]}/table/v1/driving/${coordList(places)}?annotations=duration,distance`
     const data = (await fetchJson(url, signal)) as OsrmTable
     if (data.code !== 'Ok') throw new Error(data.code)
     const fallback = estimateMatrix(places, mode)
-    return {
+    const matrix: TravelMatrix = {
       ids: places.map((p) => p.id),
       minutes: data.durations.map((row, i) => row.map((s, j) => (s === null ? fallback.minutes[i][j] : s / 60))),
       metres: data.distances.map((row, i) => row.map((m, j) => (m === null ? fallback.metres[i][j] : m))),
       source: 'road',
     }
+    writeCache(cacheKey, matrix)
+    return matrix
   } catch (err) {
     if (signal?.aborted) throw err
     console.warn('Routing service unavailable, using straight-line estimates', err)
