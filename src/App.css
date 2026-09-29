@@ -18,6 +18,7 @@
 
 .map-pane {
   position: relative;
+  z-index: 0; /* contain Leaflet's z-indexed panes so the bottom sheet can overlap the map */
   min-height: 0;
 }
 
@@ -35,6 +36,10 @@
   }
   .map-pane {
     grid-row: 1;
+  }
+  /* Keep the OSM attribution clear of the sheet's overlap. */
+  .map-pane .leaflet-bottom {
+    bottom: 20px;
   }
   .sidebar {
     grid-row: 2;
@@ -323,6 +328,9 @@ a:focus-visible {
   }
   .header-actions .btn-sm {
     padding: 6px 9px;
+  }
+  .summary .btn-cta {
+    flex: 1 0 100%;
   }
 }
 
