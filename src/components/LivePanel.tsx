@@ -1,6 +1,7 @@
 import { dayKey, formatTime, parseTime } from '../core/time'
 import type { Visit } from '../core/solver'
 import type { LatLng, LiveState, TravelMode } from '../core/types'
+import { Icon } from './Icon'
 
 const GMAPS_MODE: Record<TravelMode, string> = { walking: 'walking', cycling: 'bicycling', driving: 'driving' }
 
@@ -32,7 +33,7 @@ export function LivePanel({ live, next, nextPlace, mode, nameOf, onComplete, onD
     <section className="card live">
       <div className="live-head">
         <span className="live-dot" aria-hidden />
-        <strong>On the road</strong>
+        <strong>Live</strong>
         <label className="live-clock">
           <span className="muted small">Clock</span>
           <input
@@ -64,16 +65,21 @@ export function LivePanel({ live, next, nextPlace, mode, nameOf, onComplete, onD
       </p>
       {next ? (
         <>
-          <p className="live-next">
-            Next: <strong>{nameOf(next.stopId)}</strong>, arrive {formatTime(next.arrival)}
-            {next.wait > 0.5 && `, starts ${formatTime(next.start)}`}
-          </p>
+          <div className="live-next">
+            <span className="live-kicker">Next up</span>
+            <span className="live-title">{nameOf(next.stopId)}</span>
+            <span className="live-when">
+              Arrive {formatTime(next.arrival)}
+              {next.wait > 0.5 && ` · opens ${formatTime(next.start)}`}
+            </span>
+          </div>
           <div className="btn-row">
-            <button className="btn btn-primary" onClick={onComplete}>
+            <button className="btn btn-cta" onClick={onComplete}>
               {live.followClock ? 'Visited, leaving now' : `Visited, leaving ${formatTime(next.end)}`}
             </button>
             {nextPlace && (
               <a className="btn" href={directionsUrl(nextPlace, mode)} target="_blank" rel="noreferrer">
+                <Icon name="navigate" size={16} />
                 Navigate
               </a>
             )}
@@ -83,7 +89,10 @@ export function LivePanel({ live, next, nextPlace, mode, nameOf, onComplete, onD
           </div>
         </>
       ) : (
-        <p className="live-next">No stops left. Head to the finish.</p>
+        <div className="live-next">
+          <span className="live-kicker">All done</span>
+          <span className="live-title">Head to the finish</span>
+        </div>
       )}
       <div className="btn-row">
         <span className="small muted">Running late:</span>

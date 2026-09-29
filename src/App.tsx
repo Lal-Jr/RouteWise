@@ -5,6 +5,7 @@ import { MapView } from './components/MapView'
 import { NoticeBanner } from './components/NoticeBanner'
 import { SearchBox } from './components/SearchBox'
 import { TripSettings } from './components/TripSettings'
+import { Icon } from './components/Icon'
 import { Toast } from './components/Toast'
 import { formatDuration, formatTime } from './core/time'
 import type { Place, PlaceRole } from './core/types'
@@ -37,15 +38,14 @@ export default function App() {
       <aside className="sidebar">
         <header className="app-header">
           <div className="brand">
-            <span className="brand-mark" aria-hidden>
-              ⟡
-            </span>
-            <h1>RouteWise</h1>
+            <img className="brand-mark" src="favicon.svg" alt="" width={30} height={30} />
+            <h1>routewise</h1>
           </div>
-          <div className="btn-row">
+          <div className="header-actions">
             {trip.start && (
-              <button className="btn btn-sm btn-ghost" onClick={actions.shareTrip}>
-                Share
+              <button className="btn btn-sm btn-ghost" onClick={actions.shareTrip} aria-label="Share">
+                <Icon name="share" size={16} />
+                <span className="hide-narrow">Share</span>
               </button>
             )}
             <button className="btn btn-sm btn-ghost" onClick={actions.loadDemo}>
@@ -61,11 +61,11 @@ export default function App() {
 
         <SearchBox
           near={trip.start ?? undefined}
-          placeholder={trip.start ? 'Add a place (museum, café, address…)' : 'Where does your day start?'}
+          placeholder={trip.start ? 'Museums, cafés, addresses…' : 'Your hotel, a station, an address…'}
           onPick={(r, as) => addPlace({ name: r.name, lat: r.lat, lng: r.lng }, as)}
           allowAnchors={!live}
         />
-        <p className="hint small muted">Or click anywhere on the map.</p>
+        <p className="hint small muted">or tap anywhere on the map</p>
 
         {trip.stops.length === 0 && (
           <div className="empty card">
@@ -89,8 +89,11 @@ export default function App() {
         {trip.start && trip.stops.length > 0 && schedule && plan && (
           <>
             <section className="summary">
-              <div className={`status ${schedule.feasible ? 'status-ok' : 'status-bad'}`}>
-                {schedule.feasible ? 'Feasible plan' : `${issues} timing issue${issues === 1 ? '' : 's'}`}
+              <div className="summary-head">
+                <h2>Your day</h2>
+                <div className={`status ${schedule.feasible ? 'status-ok' : 'status-bad'}`}>
+                  {schedule.feasible ? 'Everything fits' : `${issues} timing issue${issues === 1 ? '' : 's'}`}
+                </div>
               </div>
               <dl className="stats">
                 <div>
@@ -115,6 +118,7 @@ export default function App() {
               </dl>
               <div className="btn-row">
                 <button className="btn" onClick={actions.optimizeNow} title="Search for a better order from scratch">
+                  <Icon name="sparkle" size={16} />
                   Re-optimize
                 </button>
                 <label className="check small" title="Automatically reorder or drop stops whenever the plan becomes infeasible">
@@ -122,7 +126,8 @@ export default function App() {
                   Auto-repair
                 </label>
                 {!live && (
-                  <button className="btn btn-primary push-right" onClick={actions.startTrip} disabled={!schedule.visits.length}>
+                  <button className="btn btn-cta push-right" onClick={actions.startTrip} disabled={!schedule.visits.length}>
+                    <Icon name="navigate" size={16} />
                     Start trip
                   </button>
                 )}
@@ -167,7 +172,14 @@ export default function App() {
             />
           </>
         )}
-        {trip.start && trip.stops.length > 0 && !schedule && <p className="muted small">Fetching travel times…</p>}
+        {trip.start && trip.stops.length > 0 && !schedule && (
+          <div className="skeleton" aria-busy="true" aria-label="Fetching travel times">
+            <span />
+            <span />
+            <span />
+            <p className="muted small">Fetching travel times…</p>
+          </div>
+        )}
       </aside>
 
       {toast && <Toast key={toast.id} entry={toast} onUndo={actions.undoLast} onDismiss={actions.dismissToast} />}

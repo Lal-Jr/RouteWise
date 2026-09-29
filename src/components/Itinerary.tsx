@@ -2,6 +2,7 @@ import { unschedulableReason } from '../core/feasibility'
 import type { Plan, Visit } from '../core/solver'
 import { formatDuration, formatTime, parseTime } from '../core/time'
 import type { LiveState, Priority, Stop, Trip } from '../core/types'
+import { Icon, type IconName } from './Icon'
 
 const PRIORITY_LABEL: Record<Priority, string> = {
   must: 'Must visit',
@@ -11,6 +12,7 @@ const PRIORITY_LABEL: Record<Priority, string> = {
 }
 
 const MODE_VERB = { walking: 'walk', cycling: 'ride', driving: 'drive' } as const
+const MODE_ICON: Record<Trip['mode'], IconName> = { walking: 'walk', cycling: 'bike', driving: 'car' }
 
 interface Props {
   trip: Trip
@@ -52,7 +54,7 @@ export function Itinerary({ trip, plan, live, selectedId, nameOf, onSelect, onUp
 
         <li className="tl-anchor">
           <span className="badge badge-anchor" aria-hidden>
-            ⌂
+            <Icon name="home" size={15} />
           </span>
           <div className="tl-main">
             <span className="tl-name">{live ? `Leave ${nameOf(live.currentPlaceId)}` : `Depart ${trip.start?.name}`}</span>
@@ -70,6 +72,7 @@ export function Itinerary({ trip, plan, live, selectedId, nameOf, onSelect, onUp
               stop={stop}
               number={firstNumber + i}
               verb={MODE_VERB[trip.mode]}
+              modeIcon={MODE_ICON[trip.mode]}
               selected={selectedId === v.stopId}
               canMoveUp={i > 0}
               canMoveDown={i < schedule.visits.length - 1}
@@ -84,11 +87,12 @@ export function Itinerary({ trip, plan, live, selectedId, nameOf, onSelect, onUp
         {endName && (
           <>
             <li className="tl-leg muted small">
+              <Icon name={MODE_ICON[trip.mode]} size={14} />
               {formatDuration(schedule.endTravel)} {MODE_VERB[trip.mode]}
             </li>
             <li className={`tl-anchor ${schedule.overtime > 0 ? 'tl-late' : ''}`}>
               <span className="badge badge-anchor" aria-hidden>
-                ⚑
+                <Icon name="flag" size={15} />
               </span>
               <div className="tl-main">
                 <span className="tl-name">Arrive {endName}</span>
@@ -162,6 +166,7 @@ interface StopItemProps {
   stop: Stop
   number: number
   verb: string
+  modeIcon: IconName
   selected: boolean
   canMoveUp: boolean
   canMoveDown: boolean
@@ -171,10 +176,11 @@ interface StopItemProps {
   onMove: (delta: number) => void
 }
 
-function StopItem({ visit, stop, number, verb, selected, canMoveUp, canMoveDown, onSelect, onUpdate, onRemove, onMove }: StopItemProps) {
+function StopItem({ visit, stop, number, verb, modeIcon, selected, canMoveUp, canMoveDown, onSelect, onUpdate, onRemove, onMove }: StopItemProps) {
   return (
     <>
       <li className="tl-leg muted small">
+        <Icon name={modeIcon} size={14} />
         {formatDuration(visit.travel)} {verb}
         {visit.wait >= 1 && <span className="flag flag-wait"> then wait {formatDuration(visit.wait)}</span>}
       </li>

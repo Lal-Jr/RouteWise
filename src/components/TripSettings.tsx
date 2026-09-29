@@ -1,5 +1,6 @@
 import { formatTime, parseTime } from '../core/time'
 import type { Trip, TravelMode } from '../core/types'
+import { Icon, type IconName } from './Icon'
 
 interface Props {
   trip: Trip
@@ -7,10 +8,10 @@ interface Props {
   onChange: (patch: Partial<Trip>, why?: string) => void
 }
 
-const MODES: { mode: TravelMode; label: string }[] = [
-  { mode: 'walking', label: 'Walk' },
-  { mode: 'cycling', label: 'Bike' },
-  { mode: 'driving', label: 'Drive' },
+const MODES: { mode: TravelMode; label: string; icon: IconName }[] = [
+  { mode: 'walking', label: 'Walk', icon: 'walk' },
+  { mode: 'cycling', label: 'Bike', icon: 'bike' },
+  { mode: 'driving', label: 'Drive', icon: 'car' },
 ]
 
 export function TripSettings({ trip, locked, onChange }: Props) {
@@ -82,11 +83,11 @@ export function TripSettings({ trip, locked, onChange }: Props) {
       {trip.dayEnd <= trip.dayStart && (
         <p className="flag flag-late small">The day ends before it starts. Set a later end time.</p>
       )}
-      <div className="grid-2">
+      <div className="grid-2 grid-mode">
         <div className="field">
           <span className="field-label">Travel by</span>
           <div className="segmented" role="radiogroup" aria-label="Travel mode">
-            {MODES.map(({ mode, label }) => (
+            {MODES.map(({ mode, label, icon }) => (
               <button
                 key={mode}
                 role="radio"
@@ -94,13 +95,14 @@ export function TripSettings({ trip, locked, onChange }: Props) {
                 className={trip.mode === mode ? 'active' : ''}
                 onClick={() => onChange({ mode }, `Switched to ${label.toLowerCase()}`)}
               >
+                <Icon name={icon} size={16} />
                 {label}
               </button>
             ))}
           </div>
         </div>
         <label className="field">
-          <span className="field-label">Buffer per leg (min)</span>
+          <span className="field-label" title="Extra minutes added to every leg">Buffer (min)</span>
           <input
             type="number"
             min={0}

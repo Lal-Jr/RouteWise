@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import type { LatLng, PlaceRole } from '../core/types'
+import { Icon } from './Icon'
 import { searchPlaces, type SearchResult } from '../services/geocode'
 
 interface Props {
@@ -51,15 +52,18 @@ export function SearchBox({ near, placeholder, onPick, allowAnchors = true }: Pr
   return (
     <div className="search">
       <form onSubmit={submit} className="search-row">
-        <input
-          type="search"
-          value={query}
-          placeholder={placeholder}
-          onChange={(e) => setQuery(e.target.value)}
-          aria-label={placeholder}
-        />
-        <button type="submit" className="btn" disabled={busy}>
-          {busy ? 'Searching…' : 'Search'}
+        <div className="search-text">
+          <span className="search-label">{near ? 'Add a place' : 'Start from'}</span>
+          <input
+            type="search"
+            value={query}
+            placeholder={placeholder}
+            onChange={(e) => setQuery(e.target.value)}
+            aria-label={placeholder}
+          />
+        </div>
+        <button type="submit" className="search-go" disabled={busy} aria-label="Search">
+          {busy ? <span className="spinner" aria-hidden /> : <Icon name="search" size={18} />}
         </button>
       </form>
       {error && <p className="muted small error-text">{error}</p>}
